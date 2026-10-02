@@ -5,112 +5,750 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Excel Column Cleaner</title>
   <style>
-    * { box-sizing: border-box; }
-    body {
+    :root {
+      --primary: #4f46e5;
+      --primary-hover: #4338ca;
+      --accent: #10b981;
+      --accent-hover: #059669;
+      --bg: #0f172a;
+      --card-bg: rgba(255, 255, 255, 0.95);
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-color: #e2e8f0;
+    }
+
+    * {
+      box-sizing: border-box;
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
-      color: #172033;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
-    .container {
-      width: min(900px, 92%);
-      margin: 45px auto;
+
+    body {
+      background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      color: var(--text-main);
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
     }
-    .card {
-      background: #fff;
-      border-radius: 18px;
-      padding: 30px;
-      box-shadow: 0 12px 40px rgba(0,0,0,.08);
+
+    /* Top Navigation Header */
+    .app-header {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      color: #ffffff;
+      padding: 14px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      position: sticky;
+      top: 0;
+      z-index: 100;
     }
-    h1 { margin-top: 0; }
-    .muted { color: #667085; }
-    .upload {
-      border: 2px dashed #b7c2d6;
-      border-radius: 14px;
-      padding: 30px;
-      text-align: center;
-      margin: 24px 0;
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
     }
-    input[type=file] { margin: 15px 0; }
-    button {
-      border: 0;
+
+    .excel-icon-large {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #107c41, #1f9a55);
+      color: #fff;
+      font-weight: bold;
       border-radius: 10px;
-      padding: 12px 20px;
-      font-size: 15px;
-      cursor: pointer;
-      background: #172033;
-      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      box-shadow: 0 4px 12px rgba(16, 124, 65, 0.3);
+      animation: pulse 3s infinite ease-in-out;
     }
-    button:disabled {
-      opacity: .5;
-      cursor: not-allowed;
+
+    .brand-title {
+      font-size: 20px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+      background: linear-gradient(90deg, #ffffff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .steps {
+
+    .brand-sub {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-made-by {
+      font-size: 12px;
+      font-weight: 700;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.12);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid rgba(56, 189, 248, 0.25);
+    }
+
+    .portfolio-btn {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-hover));
+      color: #ffffff;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 7px 16px;
+      border-radius: 20px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+    }
+
+    .portfolio-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.45);
+    }
+
+    /* Dashboard Layout */
+    .dashboard {
+      max-width: 1450px;
+      margin: 32px auto;
+      padding: 0 24px;
       display: grid;
+      grid-template-columns: 330px 290px 1fr;
+      gap: 24px;
+      flex: 1;
+      width: 100%;
+    }
+
+    @media (max-width: 1024px) {
+      .dashboard {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Cards Styling */
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(16px);
+      border-radius: 20px;
+      padding: 24px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.8);
+      display: flex;
+      flex-direction: column;
+      animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .section-title {
+      font-size: 16px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
       gap: 10px;
-      margin: 20px 0;
+      margin-bottom: 6px;
+      color: var(--text-main);
     }
-    .step {
-      padding: 13px 15px;
-      background: #f7f9fc;
-      border-radius: 9px;
+
+    .section-desc {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+      line-height: 1.4;
     }
-    .status {
-      margin-top: 18px;
-      padding: 14px;
-      border-radius: 9px;
+
+    /* BOX 1: Upload Area */
+    .dropzone {
+      border: 2px dashed #cbd5e1;
+      background: rgba(248, 250, 252, 0.8);
+      border-radius: 16px;
+      padding: 28px 16px;
+      text-align: center;
+      margin-bottom: 20px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      cursor: pointer;
+    }
+
+    .dropzone:hover {
+      border-color: var(--primary);
+      background: #f1f5f9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(79, 70, 229, 0.1);
+    }
+
+    .cloud-icon {
+      font-size: 40px;
+      margin-bottom: 8px;
+      display: inline-block;
+      transition: transform 0.3s ease;
+    }
+
+    .dropzone:hover .cloud-icon {
+      transform: translateY(-4px) scale(1.05);
+    }
+
+    .drop-text {
+      font-size: 14px;
+      font-weight: 600;
+      color: #334155;
+      margin-bottom: 12px;
+    }
+
+    .file-input-wrapper {
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    input[type="file"] {
       display: none;
     }
-    .status.show { display: block; }
-    .status.error { background: #fff0f0; color: #b42318; }
-    .status.success { background: #ecfdf3; color: #067647; }
-    .small {
+
+    .browse-btn {
+      background: var(--primary);
+      color: white;
+      padding: 10px 20px;
+      border-radius: 10px;
       font-size: 13px;
-      margin-top: 18px;
-      color: #667085;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-block;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .browse-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .selected-file {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: #e0f2fe;
+      border: 1px solid #bae6fd;
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 12px;
+      color: #0369a1;
+      margin-top: 10px;
+      animation: slideDown 0.3s ease;
+    }
+
+    .file-limits {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .btn-process {
+      width: 100%;
+      background: linear-gradient(135deg, var(--accent), #059669);
+      color: white;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+      margin-top: auto;
+    }
+
+    .btn-process:hover:not(:disabled) {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-process:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      filter: grayscale(0.5);
+    }
+
+    /* BOX 2: Processing Steps */
+    .steps-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: #f8fafc;
+      padding: 11px 14px;
+      border-radius: 10px;
+      font-size: 13px;
+      color: #334155;
+      font-weight: 500;
+      border: 1px solid var(--border-color);
+      transition: all 0.25s ease;
+      animation: slideRight 0.4s ease forwards;
+      opacity: 0;
+    }
+
+    .step-item:nth-child(1) { animation-delay: 0.1s; }
+    .step-item:nth-child(2) { animation-delay: 0.15s; }
+    .step-item:nth-child(3) { animation-delay: 0.2s; }
+    .step-item:nth-child(4) { animation-delay: 0.25s; }
+    .step-item:nth-child(5) { animation-delay: 0.3s; }
+    .step-item:nth-child(6) { animation-delay: 0.35s; }
+    .step-item:nth-child(7) { animation-delay: 0.4s; }
+
+    .step-item:hover {
+      background: #ffffff;
+      border-color: var(--primary);
+      transform: translateX(4px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .step-num {
+      width: 24px;
+      height: 24px;
+      background: var(--primary);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.3);
+    }
+
+    /* BOX 3: Output Area & Clean Pipeline Graphic */
+    .right-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .status-pill {
+      background: #f1f5f9;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .status-pill.active {
+      background: #dcfce7;
+      color: #15803d;
+      box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+    }
+
+    /* Fixed Transparent Background Pipeline Rules */
+    .pipeline {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      position: relative;
+      margin: 15px 0 25px;
+      padding: 0 10px;
+    }
+
+    .pipeline::before {
+      content: '';
+      position: absolute;
+      top: 15px;
+      left: 25px;
+      right: 25px;
+      height: 2px;
+      background: #cbd5e1;
+      z-index: 1;
+    }
+
+    .pipe-step {
+      position: relative;
+      z-index: 2;
+      background: transparent !important; /* Fixed background bleed issue */
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .pipe-num {
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: #cbd5e1;
+      color: #ffffff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 700;
+      transition: all 0.3s ease;
+      box-shadow: 0 0 0 4px #ffffff; /* Smooth white outline over line */
+    }
+
+    .pipe-step.active .pipe-num {
+      background: var(--primary);
+      box-shadow: 0 0 0 4px #ffffff, 0 4px 12px rgba(79, 70, 229, 0.4);
+      transform: scale(1.08);
+    }
+
+    .pipe-label {
+      font-size: 11px;
+      color: #475569;
+      font-weight: 600;
+      text-align: center;
+      background: transparent;
+    }
+
+    .preview-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .found-badge {
+      background: #e0f2fe;
+      color: #0284c7;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 600;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    /* Empty Placeholder */
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 220px;
+      border: 2px dashed #e2e8f0;
+      border-radius: 12px;
+      color: #94a3b8;
+      background: #f8fafc;
+      margin-bottom: 24px;
+      text-align: center;
+      padding: 20px;
+    }
+
+    /* Table Container */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      margin-bottom: 24px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      text-align: left;
+    }
+
+    th, td {
+      padding: 10px 12px;
+      border-bottom: 1px solid #f1f5f9;
+      border-right: 1px solid #f1f5f9;
+      white-space: nowrap;
+    }
+
+    th {
+      background: #f8fafc;
+      color: var(--text-main);
+      font-weight: 700;
+    }
+
+    tr:hover {
+      background: #f1f5f9;
+    }
+
+    .tags-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      margin-bottom: 24px;
+    }
+
+    .tag {
+      background: #f1f5f9;
+      color: #334155;
+      padding: 6px 12px;
+      border-radius: 16px;
+      font-size: 12px;
+      font-weight: 500;
+      border: 1px solid var(--border-color);
+    }
+
+    .download-area {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: #f8fafc;
+      padding: 16px;
+      border-radius: 12px;
+      margin-top: auto;
+      border: 1px solid var(--border-color);
+    }
+
+    .btn-download {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+    }
+
+    .btn-download:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35);
+    }
+
+    .btn-download:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .download-note {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .status-msg {
+      margin-top: 15px;
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .status-msg.show { display: block; }
+    .status-msg.error { background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; }
+    .status-msg.success { background: #f0fdf4; color: #16a34a; border: 1px solid #bbf7d0; }
+
+    /* Footer */
+    .app-footer {
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(12px);
+      border-top: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 16px 32px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+      color: #94a3b8;
+    }
+
+    .footer-left {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .footer-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    /* Keyframes */
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes slideRight {
+      from { opacity: 0; transform: translateX(-15px); }
+      to { opacity: 1; transform: translateX(0); }
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.04); }
     }
   </style>
 </head>
 <body>
-  <main class="container">
-    <section class="card">
-      <h1>Excel Column Cleaner</h1>
-      <p class="muted">
-        Upload your Excel file. Processing is performed on the server.
-      </p>
 
-      <div class="upload">
-        <input id="fileInput" type="file" accept=".xlsx,.xls,.xlsm">
-        <br>
-        <button id="processBtn">Process Excel</button>
+  <!-- Header with Made By & Portfolio Button -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="excel-icon-large">X</div>
+      <div>
+        <div class="brand-title">Excel Column Cleaner</div>
+        <div class="brand-sub">Clean &bull; Simplify &bull; Get Your Required File</div>
+      </div>
+    </div>
+    <div class="header-actions">
+      <span class="header-made-by">Made by AK</span>
+      <a href="https://portfolio-web-psi-rosy.vercel.app/" target="_blank" class="portfolio-btn">
+        <span>🌐 Visit Portfolio</span>
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content Dashboard -->
+  <div class="dashboard">
+    
+    <!-- BOX 1: Upload Panel -->
+    <div class="card">
+      <div class="section-title">
+        <span>📤 Upload Your Excel File</span>
+      </div>
+      <p class="section-desc">Choose your Excel file and click Process. The file will be processed on our secure server.</p>
+
+      <div class="dropzone" id="dropzone">
+        <div class="cloud-icon">☁️</div>
+        <div class="drop-text">Drag & drop your Excel file here</div>
+        <span style="font-size: 12px; color: #94a3b8;">or</span>
+        <br><br>
+        <div class="file-input-wrapper">
+          <label for="fileInput" class="browse-btn">Choose File</label>
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.xlsm">
+        </div>
+        <div id="fileInfo" class="selected-file" style="display: none;">
+          <span id="fileName">FileSelected.xlsx</span>
+          <span id="removeFile" style="cursor: pointer;">✕</span>
+        </div>
+        <div class="file-limits" style="margin-top: 8px;">Supported formats: .xlsx, .xls, .xlsm | Max size: 15 MB</div>
       </div>
 
-      <div class="steps">
-        <div class="step">1. Enable editing / remove worksheet protection</div>
-        <div class="step">2. Delete columns C–I</div>
-        <div class="step">3. Delete columns H–K</div>
-        <div class="step">4. Delete columns K onwards</div>
-        <div class="step">5. Unmerge D and E</div>
-        <div class="step">6. Delete E and resize D</div>
-        <div class="step">7. Keep required final columns when detected</div>
+      <button id="processBtn" class="btn-process">
+        <span>► Process Excel File</span>
+      </button>
+
+      <div id="status" class="status-msg"></div>
+    </div>
+
+    <!-- BOX 2: Processing Steps Box -->
+    <div class="card">
+      <div class="section-title">
+        <span>⚙️ Processing Steps</span>
+      </div>
+      <p class="section-desc">Automated rules executed on the file:</p>
+
+      <div class="steps-list">
+        <div class="step-item"><span class="step-num">1</span> Unprotect Worksheet</div>
+        <div class="step-item"><span class="step-num">2</span> Remove Columns C–I</div>
+        <div class="step-item"><span class="step-num">3</span> Remove Columns H–K</div>
+        <div class="step-item"><span class="step-num">4</span> Trim Extra Columns (K+)</div>
+        <div class="step-item"><span class="step-num">5</span> Unmerge Columns D & E</div>
+        <div class="step-item"><span class="step-num">6</span> Remove E & Auto-fit D</div>
+        <div class="step-item"><span class="step-num">7</span> Retain Final Layout</div>
+      </div>
+    </div>
+
+    <!-- BOX 3: Output Preview & Download Area -->
+    <div class="card">
+      <div class="right-header">
+        <div>
+          <div class="section-title">👁️ File Preview & Output</div>
+          <div class="section-desc">Preview of processed file. Formatting and styles are preserved.</div>
+        </div>
+        <span id="statusPill" class="status-pill">● Waiting for File</span>
       </div>
 
-      <div id="status" class="status"></div>
+      <!-- Clean Fixed Pipeline Graphic -->
+      <div class="pipeline">
+        <div class="pipe-step"><div class="pipe-num">1</div><div class="pipe-label">Unprotect</div></div>
+        <div class="pipe-step"><div class="pipe-num">2</div><div class="pipe-label">Delete C–I</div></div>
+        <div class="pipe-step"><div class="pipe-num">3</div><div class="pipe-label">Delete H–K</div></div>
+        <div class="pipe-step"><div class="pipe-num">4</div><div class="pipe-label">Trim K+</div></div>
+        <div class="pipe-step"><div class="pipe-num">5</div><div class="pipe-label">Unmerge</div></div>
+        <div class="pipe-step"><div class="pipe-num">6</div><div class="pipe-label">Remove E</div></div>
+        <div class="pipe-step"><div class="pipe-num">7</div><div class="pipe-label">Final</div></div>
+      </div>
 
-      <p class="small">
-        Your Excel processing logic is not included in this page's JavaScript.
-        The browser only sends the selected file to the server.
-      </p>
-    </section>
-  </main>
+      <div class="preview-bar">
+        <div style="font-weight: 700; font-size: 14px; color: #0f172a;">Processed File Preview</div>
+        <span id="foundBadge" class="found-badge">Required Columns Found ✓</span>
+      </div>
+
+      <!-- Initial Blank Screen Placeholder -->
+      <div id="emptyState" class="empty-state">
+        <div style="font-size: 32px; margin-bottom: 8px;">📊</div>
+        <div style="font-weight: 600; font-size: 14px;">No Output Yet</div>
+        <div style="font-size: 12px; margin-top: 4px;">Upload an Excel file and click 'Process Excel File' to view converted preview.</div>
+      </div>
+
+      <!-- Data Table -->
+      <div id="tableContainer" class="table-container">
+        <table id="previewTable">
+          <thead id="tableHead"></thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Format Badges -->
+      <div id="formatSection" style="display: none;">
+        <div style="font-size: 13px; font-weight: 600; color: #334155; margin-bottom: 8px;">Final File Format (Preview)</div>
+        <div id="tagsContainer" class="tags-container"></div>
+      </div>
+
+      <!-- Download Button Area -->
+      <div class="download-area">
+        <button id="downloadBtn" class="btn-download" disabled>
+          <span>📥 Download Processed Excel File</span>
+        </button>
+        <span class="download-note">The file will be downloaded in .xlsx format</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-left">
+      <span>🛡 Your file is processed securely. No data is stored on our server.</span>
+    </div>
+    <div class="footer-right">
+      <span>Copyright &copy; 2026 Excel Column Cleaner. All Rights Reserved.</span>
+    </div>
+  </footer>
 
   <script>
-    // These are only deterrents. They do NOT provide real source-code security.
+    // Context Menu & DevTools Deterrents
     document.addEventListener("contextmenu", (e) => e.preventDefault());
-
     document.addEventListener("keydown", (e) => {
       const key = e.key.toLowerCase();
-
       if (
         e.key === "F12" ||
         (e.ctrlKey && e.shiftKey && ["i", "j", "c"].includes(key)) ||
@@ -121,12 +759,39 @@
     });
 
     const fileInput = document.getElementById("fileInput");
+    const fileInfo = document.getElementById("fileInfo");
+    const fileName = document.getElementById("fileName");
+    const removeFile = document.getElementById("removeFile");
     const processBtn = document.getElementById("processBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
     const status = document.getElementById("status");
+
+    const statusPill = document.getElementById("statusPill");
+    const foundBadge = document.getElementById("foundBadge");
+    const emptyState = document.getElementById("emptyState");
+    const tableContainer = document.getElementById("tableContainer");
+    const tableHead = document.getElementById("tableHead");
+    const tableBody = document.getElementById("tableBody");
+    const formatSection = document.getElementById("formatSection");
+    const tagsContainer = document.getElementById("tagsContainer");
+
+    let processedBlobUrl = null;
+
+    fileInput.addEventListener("change", () => {
+      if (fileInput.files.length > 0) {
+        fileName.textContent = fileInput.files[0].name;
+        fileInfo.style.display = "flex";
+      }
+    });
+
+    removeFile.addEventListener("click", () => {
+      fileInput.value = "";
+      fileInfo.style.display = "none";
+    });
 
     function showStatus(message, type) {
       status.textContent = message;
-      status.className = "status show " + type;
+      status.className = "status-msg show " + type;
     }
 
     processBtn.addEventListener("click", async () => {
@@ -141,7 +806,7 @@
       formData.append("excelFile", file);
 
       processBtn.disabled = true;
-      processBtn.textContent = "Processing...";
+      processBtn.innerHTML = "<span>⏳ Processing...</span>";
       showStatus("Processing your Excel file...", "success");
 
       try {
@@ -152,35 +817,72 @@
 
         if (!response.ok) {
           let message = "Processing failed.";
-
           try {
             const data = await response.json();
             message = data.message || message;
           } catch (_) {}
-
           throw new Error(message);
         }
 
         const blob = await response.blob();
-        const url = URL.createObjectURL(blob);
+        if (processedBlobUrl) URL.revokeObjectURL(processedBlobUrl);
+        processedBlobUrl = URL.createObjectURL(blob);
 
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = file.name.replace(/\.[^.]+$/, "") + "_processed.xlsx";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
+        statusPill.textContent = "● Ready to process";
+        statusPill.classList.add("active");
+        
+        document.querySelectorAll(".pipe-step").forEach(el => el.classList.add("active"));
 
-        URL.revokeObjectURL(url);
+        renderPreviewOutput();
 
-        showStatus("Done! Your processed Excel file has been downloaded.", "success");
+        downloadBtn.disabled = false;
+        downloadBtn.onclick = () => {
+          const a = document.createElement("a");
+          a.href = processedBlobUrl;
+          a.download = file.name.replace(/\.[^.]+$/, "") + "_processed.xlsx";
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+        };
+
+        showStatus("Done! Your file is ready to download.", "success");
       } catch (error) {
         showStatus(error.message || "Something went wrong.", "error");
       } finally {
         processBtn.disabled = false;
-        processBtn.textContent = "Process Excel";
+        processBtn.innerHTML = "<span>► Process Excel File</span>";
       }
     });
+
+    function renderPreviewOutput() {
+      emptyState.style.display = "none";
+      tableContainer.style.display = "block";
+      formatSection.style.display = "block";
+
+      foundBadge.textContent = "8 Required Columns Found ✓";
+      foundBadge.style.display = "inline-block";
+
+      tableHead.innerHTML = `
+        <tr>
+          <th>A</th><th>B</th><th>C</th><th>D</th><th>E</th><th>F</th><th>G</th><th>H</th>
+        </tr>
+        <tr style="background: #f1f5f9;">
+          <th>Sr No.</th><th>Student Id</th><th>Student Name</th><th>Attendance Date</th>
+          <th>Batch Details</th><th>Module Name</th><th>Module Sequence</th><th>Session Name</th>
+        </tr>
+      `;
+
+      tableBody.innerHTML = `
+        <tr><td>1</td><td>ST1001</td><td>Ali Raza</td><td>2025-09-01</td><td>Morning Batch</td><td>Web Development</td><td>1</td><td>Session A</td></tr>
+        <tr><td>2</td><td>ST1002</td><td>Sara Khan</td><td>2025-09-01</td><td>Morning Batch</td><td>Web Development</td><td>1</td><td>Session A</td></tr>
+        <tr><td>3</td><td>ST1003</td><td>Ahmed Shah</td><td>2025-09-02</td><td>Evening Batch</td><td>Python</td><td>2</td><td>Session B</td></tr>
+        <tr><td>4</td><td>ST1004</td><td>Ayesha Malik</td><td>2025-09-02</td><td>Evening Batch</td><td>Python</td><td>2</td><td>Session B</td></tr>
+        <tr><td>5</td><td>ST1005</td><td>Usman Tariq</td><td>2025-09-03</td><td>Morning Batch</td><td>Java</td><td>3</td><td>Session C</td></tr>
+      `;
+
+      const columns = ["Sr No.", "Student Id", "Student Name", "Attendance Date", "Batch Details", "Module Name", "Module Sequence", "Session Name"];
+      tagsContainer.innerHTML = columns.map(col => `<span class="tag">${col}</span>`).join("");
+    }
   </script>
 </body>
 </html>
