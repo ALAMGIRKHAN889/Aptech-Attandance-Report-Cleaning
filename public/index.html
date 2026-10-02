@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel Column Cleaner</title>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f7fb;
+      color: #172033;
+    }
+    .container {
+      width: min(900px, 92%);
+      margin: 45px auto;
+    }
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      padding: 30px;
+      box-shadow: 0 12px 40px rgba(0,0,0,.08);
+    }
+    h1 { margin-top: 0; }
+    .muted { color: #667085; }
+    .upload {
+      border: 2px dashed #b7c2d6;
+      border-radius: 14px;
+      padding: 30px;
+      text-align: center;
+      margin: 24px 0;
+    }
+    input[type=file] { margin: 15px 0; }
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 20px;
+      font-size: 15px;
+      cursor: pointer;
+      background: #172033;
+      color: white;
+    }
+    button:disabled {
+      opacity: .5;
+      cursor: not-allowed;
+    }
+    .steps {
+      display: grid;
+      gap: 10px;
+      margin: 20px 0;
+    }
+    .step {
+      padding: 13px 15px;
+      background: #f7f9fc;
+      border-radius: 9px;
+    }
+    .status {
+      margin-top: 18px;
+      padding: 14px;
+      border-radius: 9px;
+      display: none;
+    }
+    .status.show { display: block; }
+    .status.error { background: #fff0f0; color: #b42318; }
+    .status.success { background: #ecfdf3; color: #067647; }
+    .small {
+      font-size: 13px;
+      margin-top: 18px;
+      color: #667085;
+    }
+  </style>
+</head>
+<body>
+  <main class="container">
+    <section class="card">
+      <h1>Excel Column Cleaner</h1>
+      <p class="muted">
+        Upload your Excel file. Processing is performed on the server.
+      </p>
+
+      <div class="upload">
+        <input id="fileInput" type="file" accept=".xlsx,.xls,.xlsm">
+        <br>
+        <button id="processBtn">Process Excel</button>
+      </div>
+
+      <div class="steps">
+        <div class="step">1. Enable editing / remove worksheet protection</div>
+        <div class="step">2. Delete columns C–I</div>
+        <div class="step">3. Delete columns H–K</div>
+        <div class="step">4. Delete columns K onwards</div>
+        <div class="step">5. Unmerge D and E</div>
+        <div class="step">6. Delete E and resize D</div>
+        <div class="step">7. Keep required final columns when detected</div>
+      </div>
+
+      <div id="status" class="status"></div>
+
+      <p class="small">
+        Your Excel processing logic is not included in this page's JavaScript.
+        The browser only sends the selected file to the server.
+      </p>
+    </section>
+  </main>
+
+  <script>
+    // These are only deterrents. They do NOT provide real source-code security.
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+    document.addEventListener("keydown", (e) => {
+      const key = e.key.toLowerCase();
+
+      if (
+        e.key === "F12" ||
+        (e.ctrlKey && e.shiftKey && ["i", "j", "c"].includes(key)) ||
+        (e.ctrlKey && ["u", "s"].includes(key))
+      ) {
+        e.preventDefault();
+      }
+    });
+
+    const fileInput = document.getElementById("fileInput");
+    const processBtn = document.getElementById("processBtn");
+    const status = document.getElementById("status");
+
+    function showStatus(message, type) {
+      status.textContent = message;
+      status.className = "status show " + type;
+    }
+
+    processBtn.addEventListener("click", async () => {
+      const file = fileInput.files[0];
+
+      if (!file) {
+        showStatus("Please select an Excel file first.", "error");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("excelFile", file);
+
+      processBtn.disabled = true;
+      processBtn.textContent = "Processing...";
+      showStatus("Processing your Excel file...", "success");
+
+      try {
+        const response = await fetch("/api/process", {
+          method: "POST",
+          body: formData
+        });
+
+        if (!response.ok) {
+          let message = "Processing failed.";
+
+          try {
+            const data = await response.json();
+            message = data.message || message;
+          } catch (_) {}
+
+          throw new Error(message);
+        }
+
+        const blob = await response.blob();
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = file.name.replace(/\.[^.]+$/, "") + "_processed.xlsx";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        URL.revokeObjectURL(url);
+
+        showStatus("Done! Your processed Excel file has been downloaded.", "success");
+      } catch (error) {
+        showStatus(error.message || "Something went wrong.", "error");
+      } finally {
+        processBtn.disabled = false;
+        processBtn.textContent = "Process Excel";
+      }
+    });
+  </script>
+</body>
+</html>
