@@ -108,7 +108,6 @@ const requiredHeaders = [
   "Attendance Date",
   "Batch Details",
   "Module Name",
-  "Module Sequence",
   "Session Name"
 ];
 
@@ -168,7 +167,6 @@ function rebuildRequiredColumns(ws) {
     { wch: 18 },
     { wch: 22 },
     { wch: 22 },
-    { wch: 18 },
     { wch: 25 }
   ];
 
@@ -210,7 +208,7 @@ function processWorkbook(buffer) {
   // Step 6: Delete E and resize D.
   removeColumnEAndResizeD(ws);
 
-  // Finally, if the expected headers are present, rebuild exactly the required 8 columns.
+  // Finally, if the expected headers are present, rebuild exactly the required 7 columns.
   rebuildRequiredColumns(ws);
 
   return XLSX.write(workbook, {

@@ -24,7 +24,6 @@ Required final columns:
 - Attendance Date
 - Batch Details
 - Module Name
-- Module Sequence
 - Session Name
 
 ## Run locally
