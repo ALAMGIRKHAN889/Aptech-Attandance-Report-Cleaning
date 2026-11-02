@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SAR - Student Attendance Report</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <style>
+    :root { --primary:#4f46e5; --primary-hover:#4338ca; --accent:#10b981; --text-main:#0f172a; --text-muted:#64748b; --border:#e2e8f0; }
+    * { box-sizing:border-box; margin:0; padding:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif; }
+    body { background:linear-gradient(135deg,#0f172a 0%,#1e1b4b 50%,#0f172a 100%); color:var(--text-main); min-height:100vh; display:flex; flex-direction:column; }
+    .app-header { background:rgba(15,23,42,.85); backdrop-filter:blur(12px); color:#fff; padding:14px 32px; display:flex; justify-content:space-between; align-items:center; gap:16px; flex-wrap:wrap; border-bottom:1px solid rgba(255,255,255,.1); position:sticky; top:0; z-index:100; }
+    .brand { display:flex; align-items:center; gap:14px; }
+    .brand-logo { width:40px; height:40px; object-fit:contain; border-radius:8px; }
+    .brand-title { font-size:20px; font-weight:700; background:linear-gradient(90deg,#fff,#cbd5e1); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .brand-sub { font-size:12px; color:#94a3b8; margin-top:2px; }
+    .nav { display:flex; gap:8px; align-items:center; }
+    .nav a { color:#cbd5e1; text-decoration:none; font-size:13px; font-weight:600; padding:8px 16px; border-radius:20px; border:1px solid rgba(255,255,255,.15); transition:all .2s; }
+    .nav a:hover { background:rgba(255,255,255,.1); }
+    .nav a.active { background:linear-gradient(135deg,var(--primary),var(--primary-hover)); color:#fff; border-color:transparent; box-shadow:0 4px 12px rgba(79,70,229,.3); }
+    .made-by { font-size:12px; font-weight:700; color:#38bdf8; background:rgba(56,189,248,.12); padding:6px 14px; border-radius:20px; border:1px solid rgba(56,189,248,.25); }
+    .wrap { max-width:1100px; width:100%; margin:32px auto; padding:0 24px; display:grid; grid-template-columns:1fr 1fr; gap:24px; flex:1; }
+    @media (max-width:860px){ .wrap{grid-template-columns:1fr;} .app-header{padding:14px 16px;} }
+    .card { background:rgba(255,255,255,.95); border-radius:20px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,.25); display:flex; flex-direction:column; }
+    .section-title { font-size:16px; font-weight:700; margin-bottom:6px; }
+    .section-desc { font-size:13px; color:var(--text-muted); margin-bottom:18px; line-height:1.5; }
+    .notice { background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3; border-radius:12px; padding:12px 14px; font-size:13px; line-height:1.5; margin-bottom:18px; }
+    .notice a { color:var(--primary); font-weight:700; }
+    .dropzone { border:2px dashed #cbd5e1; background:rgba(248,250,252,.8); border-radius:16px; padding:28px 16px; text-align:center; margin-bottom:16px; cursor:pointer; transition:all .25s; }
+    .dropzone:hover, .dropzone.drag { border-color:var(--primary); background:#f1f5f9; }
+    .drop-text { font-size:14px; font-weight:600; color:#334155; margin:8px 0 12px; }
+    .browse-btn { background:var(--primary); color:#fff; padding:10px 20px; border-radius:10px; font-size:13px; font-weight:600; display:inline-block; }
+    input[type=file] { display:none; }
+    .limits { font-size:11px; color:var(--text-muted); margin-top:10px; }
+    .selected { display:none; align-items:center; justify-content:space-between; background:#e0f2fe; border:1px solid #bae6fd; padding:10px 14px; border-radius:10px; font-size:12px; color:#0369a1; margin-bottom:16px; }
+    .selected button { background:none; border:none; color:#0369a1; cursor:pointer; font-size:14px; }
+    .btn { width:100%; border:none; padding:14px; border-radius:12px; font-size:15px; font-weight:700; cursor:pointer; color:#fff; transition:all .25s; }
+    .btn-go { background:linear-gradient(135deg,var(--accent),#059669); box-shadow:0 4px 15px rgba(16,185,129,.3); }
+    .btn-dl { background:linear-gradient(135deg,var(--primary),var(--primary-hover)); box-shadow:0 4px 15px rgba(79,70,229,.3); margin-top:12px; }
+    .btn:disabled { opacity:.5; cursor:not-allowed; }
+    .btn:hover:not(:disabled) { transform:translateY(-2px); }
+    .status { display:none; margin-top:14px; padding:10px 14px; border-radius:10px; font-size:13px; line-height:1.4; }
+    .status.show { display:block; }
+    .status.error { background:#fee2e2; color:#b91c1c; }
+    .status.success { background:#dcfce7; color:#15803d; }
+    .status a { color:inherit; font-weight:700; }
+    ol.steps { list-style:none; display:flex; flex-direction:column; gap:10px; margin-bottom:18px; }
+    ol.steps li { display:flex; gap:12px; align-items:flex-start; background:#f8fafc; border:1px solid var(--border); border-radius:10px; padding:11px 14px; font-size:13px; color:#334155; line-height:1.4; }
+    .num { width:24px; height:24px; flex-shrink:0; background:var(--primary); color:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; }
+    .stats { display:none; grid-template-columns:repeat(3,1fr); gap:10px; margin-bottom:6px; }
+    .stat { background:#f8fafc; border:1px solid var(--border); border-radius:12px; padding:12px; text-align:center; }
+    .stat b { display:block; font-size:22px; color:var(--primary); }
+    .stat span { font-size:11px; color:var(--text-muted); }
+    .sheets { font-size:12px; color:var(--text-muted); line-height:1.7; }
+    .sheets code { background:#f1f5f9; padding:1px 6px; border-radius:6px; color:#334155; }
+    .slot-label { font-size:13px; font-weight:700; color:#334155; display:flex; align-items:center; gap:10px; margin-bottom:8px; }
+    .dropzone { padding:18px 16px !important; margin-bottom:12px !important; display:block; }
+    .dropzone .drop-text { margin:0 !important; }
+    .cols { display:none; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:16px; }
+    .cols label { font-size:11px; font-weight:600; color:var(--text-muted); display:flex; flex-direction:column; gap:4px; }
+    .cols select { padding:8px; border-radius:8px; border:1px solid #cbd5e1; font-size:13px; }
+    code { background:#f1f5f9; padding:1px 6px; border-radius:6px; font-size:12px; }
+  </style>
+</head>
+<body>
+  <header class="app-header">
+    <div class="brand">
+      <img src="favicon.png" alt="Logo" class="brand-logo">
+      <div>
+        <div class="brand-title">Student Attendance Report (SAR)</div>
+        <div class="brand-sub">SAR file + processed attendance &rarr; Portal &amp; Diff</div>
+      </div>
+    </div>
+    <nav class="nav">
+      <a href="/">1. Excel Cleaner</a>
+      <a href="/sar" class="active">2. SAR</a>
+      <span class="made-by">Made by AK</span>
+    </nav>
+  </header>
+
+  <main class="wrap">
+    <section class="card">
+      <div class="section-title">Upload the 2 Excel files</div>
+      <div class="section-desc">The SAR file gets two new columns: <b>Portal</b> and <b>Diff</b>.</div>
+
+      <div class="slot-label"><span class="num">1</span> SAR file</div>
+      <label class="dropzone" id="dzSar" for="sarInput">
+        <div class="drop-text" id="sarText">Drop SAR file here or <u>browse</u></div>
+        <input type="file" id="sarInput" accept=".xlsx,.xls,.xlsm">
+      </label>
+      <div class="cols" id="cols">
+        <label>Student Id column
+          <select id="idSel"></select></label>
+        <label>Class Attendance column
+          <select id="attSel"></select></label>
+      </div>
+
+      <div class="slot-label"><span class="num">2</span> Processed attendance file</div>
+      <label class="dropzone" id="dzAtt" for="attInput">
+        <div class="drop-text" id="attText">Drop processed attendance file here or <u>browse</u></div>
+        <input type="file" id="attInput" accept=".xlsx,.xls,.xlsm">
+      </label>
+      <div class="notice">
+        Attendance file must be the <b>processed</b> one. Don't have it? Clean your raw report on the
+        <a href="/">Excel Cleaner page</a> first, download <b>_processed.xlsx</b>, then upload it here.
+      </div>
+
+      <button class="btn btn-go" id="goBtn" disabled>► Generate SAR</button>
+      <div class="status" id="status"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-title">What the tool adds</div>
+      <div class="section-desc">Your SAR file stays as it is; the tool appends:</div>
+      <ol class="steps">
+        <li><span class="num">P</span><span><b>Portal</b> &mdash; days attendance is marked on the portal:<br><code>=COUNTIF(Attendance!Student Id column, Student Id)</code></span></li>
+        <li><span class="num">D</span><span><b>Diff</b> &mdash; <code>Class Attendance &minus; Portal</code>. Anything other than 0 means the portal is behind (or ahead of) class.</span></li>
+        <li><span class="num">A</span><span>The processed attendance is copied into an <b>Attendance</b> sheet inside the SAR workbook, so the formulas stay live in Excel.</span></li>
+      </ol>
+
+      <div class="stats" id="stats">
+        <div class="stat"><b id="sStudents">0</b><span>Students</span></div>
+        <div class="stat"><b id="sDiff">0</b><span>With difference</span></div>
+        <div class="stat"><b id="sMiss">0</b><span>Not on portal</span></div>
+      </div>
+      <button class="btn btn-dl" id="dlBtn" disabled>⬇ Download SAR</button>
+      <div class="sheets" style="margin-top:14px">File name: <b id="nameHint">SAR_Month_Year.xlsx</b> (current month &amp; year)</div>
+    </section>
+  </main>
+
+  <script>
+    document.addEventListener("contextmenu", (e) => e.preventDefault());
+    document.addEventListener("keydown", (e) => {
+      const k = e.key.toLowerCase();
+      if (e.key === "F12" || (e.ctrlKey && e.shiftKey && ["i","j","c"].includes(k)) || (e.ctrlKey && ["u","s"].includes(k))) e.preventDefault();
+    });
+
+    const $ = (id) => document.getElementById(id);
+    const sarInput = $("sarInput"), attInput = $("attInput"), goBtn = $("goBtn"), dlBtn = $("dlBtn"), status = $("status");
+    let blobUrl = null, outName = "SAR.xlsx", sarReady = false;
+
+    const M = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+    const now = new Date();
+    $("nameHint").textContent = `SAR_${M[now.getMonth()]}_${now.getFullYear()}.xlsx`;
+
+    function show(msg, type, html) { status[html ? "innerHTML" : "textContent"] = msg; status.className = "status show " + type; }
+    function refresh() { goBtn.disabled = !(sarReady && attInput.files.length); }
+    const okExt = (f) => /\.(xlsx|xls|xlsm)$/i.test(f.name);
+
+    function fillSelect(sel, columns, chosen) {
+      sel.innerHTML = '<option value="">-- select --</option>' + columns.map(c =>
+        `<option value="${c.index}" ${c.index === chosen ? "selected" : ""}>${c.letter} - ${c.name.replace(/</g, "&lt;")}</option>`).join("");
+    }
+
+    async function pickSar(f) {
+      sarReady = false; $("cols").style.display = "none"; refresh();
+      if (!f) return;
+      if (!okExt(f)) { show("Only .xlsx, .xls and .xlsm files are allowed.", "error"); return; }
+      $("sarText").textContent = "📄 " + f.name;
+      const fd = new FormData(); fd.append("sarFile", f);
+      try {
+        const res = await fetch("/api/sar/inspect", { method: "POST", body: fd });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Could not read the SAR file.");
+        fillSelect($("idSel"), data.columns, data.studentIdCol);
+        fillSelect($("attSel"), data.columns, data.classAttendanceCol);
+        $("cols").style.display = "grid";
+        sarReady = true; status.className = "status";
+        if (!data.studentIdCol || !data.classAttendanceCol) show("Please select the Student Id and Class Attendance columns.", "error");
+      } catch (e) { show(e.message, "error"); }
+      refresh();
+    }
+    function pickAtt(f) {
+      if (!f) return;
+      if (!okExt(f)) { show("Only .xlsx, .xls and .xlsm files are allowed.", "error"); return; }
+      $("attText").textContent = "📄 " + f.name; status.className = "status"; refresh();
+    }
+    sarInput.addEventListener("change", () => pickSar(sarInput.files[0]));
+    attInput.addEventListener("change", () => pickAtt(attInput.files[0]));
+    [["dzSar", sarInput, pickSar], ["dzAtt", attInput, pickAtt]].forEach(([id, input, fn]) => {
+      const dz = $(id);
+      ["dragenter","dragover"].forEach(t => dz.addEventListener(t, e => { e.preventDefault(); dz.classList.add("drag"); }));
+      ["dragleave","drop"].forEach(t => dz.addEventListener(t, e => { e.preventDefault(); dz.classList.remove("drag"); }));
+      dz.addEventListener("drop", e => {
+        const f = e.dataTransfer.files[0]; if (!f) return;
+        const dt = new DataTransfer(); dt.items.add(f); input.files = dt.files; fn(f);
+      });
+    });
+
+    goBtn.addEventListener("click", async () => {
+      if (!$("idSel").value || !$("attSel").value) { show("Please select the Student Id and Class Attendance columns.", "error"); return; }
+      const fd = new FormData();
+      fd.append("sarFile", sarInput.files[0]);
+      fd.append("attendanceFile", attInput.files[0]);
+      fd.append("studentIdCol", $("idSel").value);
+      fd.append("classAttendanceCol", $("attSel").value);
+      goBtn.disabled = true; goBtn.textContent = "⏳ Generating..."; dlBtn.disabled = true; $("stats").style.display = "none";
+      try {
+        const res = await fetch("/api/sar", { method: "POST", body: fd });
+        if (!res.ok) {
+          let d = {}; try { d = await res.json(); } catch (_) {}
+          const msg = (d.message || "SAR generation failed.").replace(/</g, "&lt;");
+          show(d.goCleaner ? msg + ' <a href="/">Go to Excel Cleaner &rarr;</a>' : msg, "error", true);
+          return;
+        }
+        const blob = await res.blob();
+        if (blobUrl) URL.revokeObjectURL(blobUrl);
+        blobUrl = URL.createObjectURL(blob);
+        outName = res.headers.get("X-SAR-File-Name") || outName;
+        try {
+          const s = JSON.parse(res.headers.get("X-SAR-Stats"));
+          $("sStudents").textContent = s.students; $("sDiff").textContent = s.withDifference; $("sMiss").textContent = s.notInPortal;
+          $("stats").style.display = "grid";
+        } catch (_) {}
+        dlBtn.disabled = false;
+        show("Done! " + outName + " is ready to download.", "success");
+      } catch (err) { show(err.message || "Something went wrong.", "error"); }
+      finally { goBtn.textContent = "► Generate SAR"; refresh(); }
+    });
+    dlBtn.addEventListener("click", () => {
+      const a = document.createElement("a"); a.href = blobUrl; a.download = outName;
+      document.body.appendChild(a); a.click(); a.remove();
+    });
+  </script>
+</body>
+</html>
